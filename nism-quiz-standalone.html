@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NISM Derivatives Practice Exam - Enhanced</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@tailwindcss/typography@0.5.x/dist/typography.min.css" rel="stylesheet" />
+    <style>
+        .range-lg::-webkit-slider-thumb {
+            appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+        }
+        .range-lg::-moz-range-thumb {
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // --- Enhanced Question Categories and Mappings ---
+        const SUBJECTS = {
+            INTEREST_RATE: 'Interest Rate Derivatives',
+            EQUITY: 'Equity Derivatives', 
+            CURRENCY: 'Currency Derivatives'
+        };
+
+        const QUESTION_PAPERS = {
+            'PRACTICE QUESTIONS-1': 'Practice Questions Set 1',
+            'PRACTICE QUESTIONS-2': 'Practice Questions Set 2', 
+            'PRACTICE QUESTIONS-3': 'Practice Questions Set 3',
+            'PRACTICE SET-1': 'Practice Set 1',
+            'CURRENCY DERIVATIVES-1': 'Currency Derivatives Practice Set'
+        };
+
+        // --- Question Database ---
+        const baseQuestions = [
+            // PRACTICE QUESTIONS-1
+            { "id": "p1-1", "question": "Which of these is a derivative?", "options": ["Index Options", "Index Futures", "Both 1 and 2", "None of the above"], "answer": "Both 1 and 2", "explanation": null, "topic": "PRACTICE QUESTIONS-1" },
+            { "id": "p1-2", "question": "If yield-to-maturity rises, then __________.", "options": ["Reinvestment income rises", "Bond price falls", "Both 1 and 2", "None of the above"], "answer": "Both 1 and 2", "explanation": "If the market rate rises, the bond price falls but reinvestment income rises. The bond price falls because of discounting at a higher interest rate results in lower present value; and reinvestment income rises because the interim cash flows are reinvested at higher than the original interest rate.", "topic": "PRACTICE QUESTIONS-1" },
+            { "id": "p1-3", "question": "The Conversion Factor in physical settlement of bond futures will be __________.", "options": ["same for all Deliverable bonds", "different for different Deliverable bonds", "there is no conversion factor in physical settlement", "None of the above"], "answer": "different for different Deliverable bonds", "explanation": "To make the notional bond and a Deliverable Bond equivalent in value, a Conversion Factor (also known as Price Factor) is employed, which is specific to each Deliverable Bond.", "topic": "PRACTICE QUESTIONS-1" },
+            { "id": "p1-4", "question": "A Trading member of the Exchange can do which of the following?", "options": ["Execution of trades", "Clearing and settlement of trades", "Both 1 and 2", "None of the above"], "answer": "Execution of trades", "explanation": "Trading member is a member of Exchange but not Clearing Corporation, so that it can only execute trades but settle them through a designated Professional Clearing Member. A Trading-cum-Clearing Member is a member of both Exchange and Clearing Corporation so that it can execute as well as settle trades.", "topic": "PRACTICE QUESTIONS-1" },
+            { "id": "p1-5", "question": "The Constituent Subsidiary General Ledger (CSGL) Account can be opened by:", "options": ["Stock Holding Corporation of India Ltd (SHIL)", "Clearing Corporation of India Ltd (CCIL)", "Both 1 and 2", "None of the above"], "answer": "Both 1 and 2", "explanation": null, "topic": "PRACTICE QUESTIONS-1" },
+            { "id": "p1-6", "question": "When the original period of borrowing / lending is less than one year, it is known as:", "options": ["Bond Market", "Currency Market", "Money Market", "Equity Market"], "answer": "Money Market", "explanation": "In money market, the period is less than one year; and in bond market, it is one year or more.", "topic": "PRACTICE QUESTIONS-1" },
+            { "id": "p1-7", "question": "If the Treasury bill futures contract price changes by 500 ticks, the change in value of one futures contract is:", "options": ["500", "5", "2500", "5000"], "answer": "2500", "explanation": "The tick size for contracts is Rs 0.0025. Given that the face value of one contract is equal to Rs 200,000 and given that tick size is 0.0025, the minimum change per contract will be: 200,000 x 0.0025 / 100 = 5. In the example, the contract price changes by 500 ticks, so the change in value will be 500 x 5 = 2500.", "topic": "PRACTICE QUESTIONS-1" },
+            { "id": "p1-8", "question": "One Basis Point is equal to:", "options": ["1%", "0.1%", "0.01%", "0.001%"], "answer": "0.01%", "explanation": "The change in YTM of 0.01% (or 0.0001) is called a basis point (BP) or "bip".", "topic": "PRACTICE QUESTIONS-1" },
+            { "id": "p1-9", "question": "In India, the minimum and multiple amounts of issue for T bills is:", "options": ["Rs. 2500", "Rs. 10000", "Rs. 25000", "Rs. 100000"], "answer": "Rs. 25000", "explanation": "Treasury Bills are issued by the Govt. of India at minimum and in multiples of Rs 25000.", "topic": "PRACTICE QUESTIONS-1" },
+            { "id": "p1-10", "question": "The Clearing Account is used exclusively for:", "options": ["all transactions of the Clearing Members", "making and receiving payments with Stock Exchange", "making and receiving payments with SEBI", "making and receiving payments with Clearing Corporation"], "answer": "making and receiving payments with Clearing Corporation", "explanation": "For the cash side of settlement, Clearing Corporation will pay or receive cash only through designated branches of designated banks called Clearing Banks. Therefore, Trading-cum-Clearing Member / Self-clearing Member / Professional Clearing Member must open an account with one such designated branch. This account is called Clearing Account and it should be used exclusively for making and receiving payments with Clearing Corporation.", "topic": "PRACTICE QUESTIONS-1" },
+
+            // PRACTICE QUESTIONS-2
+            { "id": "p2-1", "question": "The short-term interest rate is predominantly determined by inflation outlook.", "options": ["True", "False"], "answer": "False", "explanation": "The short-term rate is determined by liquidity and the long-term rate is determined by inflation outlook and capital expenditure by industry and business.", "topic": "PRACTICE QUESTIONS-2" },
+            { "id": "p2-2", "question": "Which of the following is true about the Conversion Factor?", "options": ["It makes the adjustment always perfect", "It makes the adjustment always imperfect", "It is a good and practical approximation for adjustment", "None of the above"], "answer": "It is a good and practical approximation for adjustment", "explanation": null, "topic": "PRACTICE QUESTIONS-2" },
+            { "id": "p2-3", "question": "Delivery margin is collected on the __________.", "options": ["Day of Intent", "Day of Delivery", "Day of Settlement", "None of the above"], "answer": "Day of Intent", "explanation": "Delivery margin is collected on the Day of Intent (Last Trading Day) after the intention to deliver and allocations are completed.", "topic": "PRACTICE QUESTIONS-2" },
+            { "id": "p2-4", "question": "Assume that the regulator has stipulated a minimum margin of Rs 200, the clearing corporation can change it to __________.", "options": ["Any amount above Rs 200", "Any amount below Rs 200", "Either 1 or 2 as it sees fit", "Any amount between Rs 150 to 200"], "answer": "Any amount above Rs 200", "explanation": "Clearing Corporation cannot reduce it below the regulator-stipulated amount.", "topic": "PRACTICE QUESTIONS-2" },
+            { "id": "p2-5", "question": "Value-at-risk (VaR) is a measure of maximum likely price change over a __________.", "options": ["given interval (called \"horizon\")", "given confidence level (called \"percentile\")", "both 1 and 2", "None of the above"], "answer": "both 1 and 2", "explanation": "VaR measures the potential maximum loss over a time period (horizon) at a certain confidence level (percentile).", "topic": "PRACTICE QUESTIONS-2" },
+
+            // PRACTICE QUESTIONS-3
+            { "id": "p3-1", "question": "What is TRUE about a Gilt Account?", "options": ["It's a demat account for Govt. securities", "It's maintained by investors with a Schedule Commercial Bank or Primary Dealers", "Both 1 and 2", "None of the above"], "answer": "Both 1 and 2", "explanation": "A Gilt Account allows an investor to hold Government securities in demat form and is maintained with a Scheduled Commercial Bank or Primary Dealer. It acts much like a securities demat account for equity.", "topic": "PRACTICE QUESTIONS-3" },
+            { "id": "p3-2", "question": "In __________ bonds, the investor has the right to demand prepayment on specified dates before maturity.", "options": ["Puttable", "Callable", "Both 1 and 2", "None of the above"], "answer": "Puttable", "explanation": "Puttable bonds give the investor the right to sell the bond back to the issuer before maturity—usually to benefit when interest rates rise, allowing reinvestment at higher rates.", "topic": "PRACTICE QUESTIONS-3" },
+            { "id": "p3-3", "question": "__________ are created from the securitization process.", "options": ["Structured investment products", "Structured credit products", "Derivatives", "Debentures"], "answer": "Structured credit products", "explanation": "Structured credit products are formed from pools of debt instruments (like loans or bonds) through securitization. These are different from structured investment products, which often involve hybrid features.", "topic": "PRACTICE QUESTIONS-3" },
+            { "id": "p3-4", "question": "Mutual Funds have to obtain prior permission of SEBI to short sell Treasury Bills and Government Bonds - State True or False.", "options": ["True", "False"], "answer": "True", "explanation": "Mutual Funds and other non-RBI regulated entities (e.g., those regulated by SEBI, IRDAI) must obtain prior permission from their respective regulators before short-selling government securities.", "topic": "PRACTICE QUESTIONS-3" },
+            { "id": "p3-5", "question": "Which of the following category of market participants can openly short-sell bond futures?", "options": ["Retail investors", "Mutual funds", "Foreign institutional investors", "All of the above"], "answer": "Retail investors", "explanation": "Retail investors are permitted to short-sell bond futures freely. However, institutions like Mutual Funds or FIIs need regulatory permission or may be restricted to hedging (not speculation).", "topic": "PRACTICE QUESTIONS-3" },
+
+            // PRACTICE SET-1 (Equity Derivatives)
+            { "id": "ps1-1", "question": "An investor who has sold a call option, will make a profit when the price of the underlying __________.", "options": ["Rises", "Falls", "Remains constant", "Both Falls and Remains constant"], "answer": "Both Falls and Remains constant", "explanation": "A call option seller (writer) profits when the option expires out-of-the-money or at-the-money, which happens when the underlying price falls or remains constant below the strike price.", "topic": "PRACTICE SET-1" },
+            { "id": "ps1-2", "question": "Nifty is at 8000. I buy a call option at strike 8100 by paying a premium of Rs 50. At expiry, Nifty closes at 8200. My profit/loss per unit will be __________.", "options": ["Profit of Rs 50", "Loss of Rs 50", "Profit of Rs 100", "No profit No loss"], "answer": "Profit of Rs 50", "explanation": "Call option payoff = Max(0, Spot - Strike) - Premium = Max(0, 8200 - 8100) - 50 = 100 - 50 = Rs 50 profit.", "topic": "PRACTICE SET-1" },
+            { "id": "ps1-3", "question": "Nifty is at 8000. I sell a put option at strike 7900 and receive a premium of Rs 60. At expiry, Nifty closes at 7800. My profit/loss per unit will be __________.", "options": ["Profit of Rs 40", "Loss of Rs 40", "Profit of Rs 60", "Loss of Rs 160"], "answer": "Loss of Rs 40", "explanation": "Put option seller payoff = Premium - Max(0, Strike - Spot) = 60 - Max(0, 7900 - 7800) = 60 - 100 = -Rs 40 (loss).", "topic": "PRACTICE SET-1" },
+            { "id": "ps1-4", "question": "Which of the following best describes a futures contract?", "options": ["An agreement to buy or sell an asset at a future date at a predetermined price", "A right to buy or sell an asset at a future date", "A contract that can be exercised only at expiry", "A contract with unlimited liability for the buyer only"], "answer": "An agreement to buy or sell an asset at a future date at a predetermined price", "explanation": "A futures contract is a binding agreement (obligation) to buy or sell an asset at a specified price on a future date, unlike options which provide rights.", "topic": "PRACTICE SET-1" },
+            { "id": "ps1-5", "question": "The maximum loss for a buyer of a call option is __________.", "options": ["Unlimited", "Limited to the premium paid", "Limited to the strike price", "Zero"], "answer": "Limited to the premium paid", "explanation": "The maximum loss for a call option buyer is the premium paid if the option expires worthless (when spot price ≤ strike price).", "topic": "PRACTICE SET-1" },
+            { "id": "ps1-6", "question": "In a bull call spread, an investor __________.", "options": ["Buys a call and sells a call with higher strike", "Buys a call and sells a call with lower strike", "Buys two calls with same strike", "Sells two calls with different strikes"], "answer": "Buys a call and sells a call with higher strike", "explanation": "A bull call spread involves buying a call option at a lower strike and selling a call option at a higher strike, expecting moderate upward price movement.", "topic": "PRACTICE SET-1" },
+            { "id": "ps1-7", "question": "The intrinsic value of a call option is __________.", "options": ["Always positive", "Max (Spot Price - Strike Price, 0)", "Max (Strike Price - Spot Price, 0)", "Equal to time value"], "answer": "Max (Spot Price - Strike Price, 0)", "explanation": "Intrinsic value of a call option is the immediate exercise value: Max(Spot - Strike, 0). It cannot be negative.", "topic": "PRACTICE SET-1" },
+            { "id": "ps1-8", "question": "Which Greek measures the sensitivity of option price to changes in the underlying asset price?", "options": ["Delta", "Gamma", "Theta", "Vega"], "answer": "Delta", "explanation": "Delta measures the rate of change of option price with respect to changes in the underlying asset price.", "topic": "PRACTICE SET-1" },
+            { "id": "ps1-9", "question": "A protective put strategy involves __________.", "options": ["Buying a stock and buying a put", "Buying a stock and selling a put", "Selling a stock and buying a put", "Selling a stock and selling a put"], "answer": "Buying a stock and buying a put", "explanation": "A protective put involves holding a long position in a stock and buying a put option to hedge against downside risk.", "topic": "PRACTICE SET-1" },
+            { "id": "ps1-10", "question": "The time value of an option is __________.", "options": ["Option Premium - Intrinsic Value", "Intrinsic Value - Option Premium", "Always zero at expiry", "Both Option Premium - Intrinsic Value and Always zero at expiry"], "answer": "Both Option Premium - Intrinsic Value and Always zero at expiry", "explanation": "Time value = Option Premium - Intrinsic Value. At expiry, time value becomes zero as only intrinsic value remains.", "topic": "PRACTICE SET-1" },
+
+            // Currency Derivatives
+            { "id": "cur-1", "question": "USD/INR futures are quoted as:", "options": ["INR per USD", "USD per INR", "Both formats", "None of the above"], "answer": "INR per USD", "explanation": "Currency futures are quoted as domestic currency per foreign currency.", "topic": "CURRENCY DERIVATIVES-1" },
+            { "id": "cur-2", "question": "The lot size for USD/INR futures is:", "options": ["USD 500", "USD 1000", "USD 1500", "USD 2000"], "answer": "USD 1000", "explanation": "Standard lot size for USD/INR futures is USD 1000.", "topic": "CURRENCY DERIVATIVES-1" },
+            { "id": "cur-3", "question": "Currency derivatives help in hedging:", "options": ["Exchange rate risk", "Interest rate risk", "Credit risk", "Liquidity risk"], "answer": "Exchange rate risk", "explanation": "Currency derivatives are primarily used to hedge against foreign exchange rate fluctuations.", "topic": "CURRENCY DERIVATIVES-1" },
+            { "id": "cur-4", "question": "A US company expecting INR receipts should:", "options": ["Buy USD/INR futures", "Sell USD/INR futures", "Buy INR/USD futures", "Do nothing"], "answer": "Sell USD/INR futures", "explanation": "To hedge INR receipts, sell USD/INR futures to lock in the exchange rate.", "topic": "CURRENCY DERIVATIVES-1" },
+            { "id": "cur-5", "question": "Currency options give the holder:", "options": ["Right to buy/sell currency", "Obligation to buy/sell currency", "Both right and obligation", "Neither right nor obligation"], "answer": "Right to buy/sell currency", "explanation": "Currency options provide the right, not obligation, to exchange currencies at a specified rate.", "topic": "CURRENCY DERIVATIVES-1" }
+        ];
+
+        // Enhanced question categorization mapping
+        const topicToSubjectMapping = {
+            'PRACTICE QUESTIONS-1': SUBJECTS.INTEREST_RATE,
+            'PRACTICE QUESTIONS-2': SUBJECTS.INTEREST_RATE,
+            'PRACTICE QUESTIONS-3': SUBJECTS.INTEREST_RATE,
+            'PRACTICE SET-1': SUBJECTS.EQUITY,
+            'CURRENCY DERIVATIVES-1': SUBJECTS.CURRENCY
+        };
+
+        // Enhanced randomization function
+        const shuffleArray = (array) => {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        };
+
+        // Helper function to get questions by subject
+        const getQuestionsBySubject = (subject) => {
+            if (subject === 'ALL') return baseQuestions;
+            return baseQuestions.filter(q => topicToSubjectMapping[q.topic] === subject);
+        };
+
+        // Helper function to get questions by paper
+        const getQuestionsByPaper = (paper) => {
+            return baseQuestions.filter(q => q.topic === paper);
+        };
+
+        // --- Helper function for analysis with negative marking ---
+        const calculateAnalysis = (questions) => {
+            const totalQuestions = questions.length;
+            let correctCount = 0;
+            let incorrectCount = 0;
+            const topicStats = {};
+
+            questions.forEach((q) => {
+                const subject = topicToSubjectMapping[q.topic] || q.topic;
+                if (!topicStats[subject]) {
+                    topicStats[subject] = { correct: 0, total: 0 };
+                }
+                
+                if (q.userAnswer) {
+                    topicStats[subject].total++;
+                    if (q.userAnswer === q.answer) {
+                        correctCount++;
+                        topicStats[subject].correct++;
+                    } else {
+                        incorrectCount++;
+                    }
+                }
+            });
+
+            const score = correctCount - (incorrectCount * 0.25);
+            const accuracy = totalQuestions > 0 ? (correctCount / totalQuestions) * 100 : 0;
+            const passed = totalQuestions > 0 ? score >= (totalQuestions * 0.6) : false;
+
+            const topicAnalysis = Object.entries(topicStats).map(([topic, stats]) => ({
+                topic,
+                accuracy: stats.total > 0 ? (stats.correct / stats.total) * 100 : 0,
+                ...stats,
+            }));
+
+            return {
+                score,
+                correctCount,
+                totalQuestions,
+                accuracy,
+                passed,
+                topicAnalysis,
+                answeredQuestions: questions,
+            };
+        };
+
+        // Simple state management
+        const useQuizState = () => {
+            const [state, setState] = useState({
+                questions: [],
+                currentQuestionIndex: 0,
+                isTestRunning: false,
+                startTime: 0,
+                finalResults: null,
+                testDurationMinutes: 0,
+                showAnswerMode: false,
+            });
+
+            const startQuiz = (config) => {
+                let selectedQuestions = [];
+                
+                if (config.mode === 'subject') {
+                    const subjectQuestions = getQuestionsBySubject(config.subject);
+                    selectedQuestions = shuffleArray(subjectQuestions).slice(0, config.numberOfQuestions);
+                } else if (config.mode === 'paper') {
+                    selectedQuestions = shuffleArray(getQuestionsByPaper(config.paper));
+                } else {
+                    selectedQuestions = shuffleArray(baseQuestions).slice(0, config.numberOfQuestions);
+                }
+                
+                const duration = Math.ceil(selectedQuestions.length * 1.2); 
+                
+                setState({
+                    questions: selectedQuestions.map(q => ({ ...q, userAnswer: null, answerRevealed: false })),
+                    currentQuestionIndex: 0,
+                    isTestRunning: true,
+                    startTime: Date.now(),
+                    finalResults: null,
+                    testDurationMinutes: duration,
+                    showAnswerMode: false,
+                });
+            };
+
+            const selectAnswer = (questionId, answer) => {
+                setState(prevState => ({
+                    ...prevState,
+                    questions: prevState.questions.map((q) =>
+                        q.id === questionId ? { ...q, userAnswer: answer } : q
+                    ),
+                }));
+            };
+
+            const revealAnswer = (questionId) => {
+                setState(prevState => ({
+                    ...prevState,
+                    questions: prevState.questions.map((q) =>
+                        q.id === questionId ? { ...q, answerRevealed: true } : q
+                    ),
+                }));
+            };
+            
+            const navigateToQuestion = (index) => {
+                if(index >= 0 && index < state.questions.length) {
+                    setState(prevState => ({ ...prevState, currentQuestionIndex: index }));
+                }
+            };
+
+            const submitTest = () => {
+                const analysis = calculateAnalysis(state.questions);
+                setState(prevState => ({ ...prevState, finalResults: analysis, isTestRunning: false }));
+            };
+            
+            const reset = () => {
+                setState({
+                    questions: [],
+                    currentQuestionIndex: 0,
+                    isTestRunning: false,
+                    startTime: 0,
+                    finalResults: null,
+                    testDurationMinutes: 0,
+                    showAnswerMode: false,
+                });
+            };
+
+            return {
+                ...state,
+                startQuiz,
+                selectAnswer,
+                revealAnswer,
+                navigateToQuestion,
+                submitTest,
+                reset
+            };
+        };
+
+        // --- Enhanced Components ---
+        function QuestionCard({ question, questionNumber, selectAnswer, navigateToQuestion, currentQuestionIndex, questions, revealAnswer }) {
+            const userAnswer = question.userAnswer;
+            const answerRevealed = question.answerRevealed;
+
+            const handleSelectAndAdvance = (option) => {
+                if (userAnswer && !answerRevealed) return; 
+
+                selectAnswer(question.id, option);
+
+                if (!answerRevealed) {
+                    setTimeout(() => {
+                        if (currentQuestionIndex < questions.length - 1) {
+                            navigateToQuestion(currentQuestionIndex + 1);
+                        }
+                    }, 500); 
+                }
+            };
+
+            const handleCheckAnswer = () => {
+                revealAnswer(question.id);
+            };
+
+            const getOptionClass = (option) => {
+                let baseClass = `p-4 border-2 rounded-lg transition-all ${userAnswer || answerRevealed ? 'cursor-default' : 'cursor-pointer'}`;
+                
+                if (answerRevealed) {
+                    if (option === question.answer) {
+                        return `${baseClass} border-green-500 bg-green-100 text-green-800`;
+                    } else if (option === userAnswer && option !== question.answer) {
+                        return `${baseClass} border-red-500 bg-red-100 text-red-800`;
+                    } else {
+                        return `${baseClass} border-gray-300 bg-gray-50`;
+                    }
+                } else if (userAnswer === option) {
+                    return `${baseClass} border-blue-500 bg-blue-50`;
+                } else {
+                    return `${baseClass} border-gray-300 hover:border-blue-400 hover:bg-gray-50`;
+                }
+            };
+
+            const subject = topicToSubjectMapping[question.topic] || question.topic;
+
+            return (
+                <div>
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-semibold text-gray-800">
+                            Question {questionNumber}
+                        </h2>
+                        <div className="text-sm">
+                            <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                                {subject}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <p className="text-lg text-gray-700 mb-6">{question.question}</p>
+
+                    <div className="space-y-4 mb-6">
+                        {question.options.map((option, index) => (
+                            <div
+                                key={index}
+                                onClick={() => handleSelectAndAdvance(option)}
+                                className={getOptionClass(option)}
+                            >
+                                <span className="font-medium text-gray-800">{option}</span>
+                                {answerRevealed && option === question.answer && (
+                                    <span className="ml-2 text-green-600 font-bold">✓ Correct</span>
+                                )}
+                                {answerRevealed && option === userAnswer && option !== question.answer && (
+                                    <span className="ml-2 text-red-600 font-bold">✗ Your Answer</span>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    {!answerRevealed && userAnswer && (
+                        <div className="flex justify-center">
+                            <button
+                                onClick={handleCheckAnswer}
+                                className="px-6 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 transition-colors"
+                            >
+                                Check Answer
+                            </button>
+                        </div>
+                    )}
+
+                    {answerRevealed && question.explanation && (
+                        <div className="mt-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-lg">
+                            <h4 className="font-semibold text-yellow-800 mb-2">Explanation:</h4>
+                            <p className="text-yellow-700">{question.explanation}</p>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        function QuizTimer({ startTime, submitTest, testDurationMinutes }) {
+            const [timeLeft, setTimeLeft] = useState(testDurationMinutes * 60);
+
+            useEffect(() => {
+                setTimeLeft(testDurationMinutes * 60);
+            }, [testDurationMinutes]);
+
+            useEffect(() => {
+                if (!startTime) return;
+
+                const interval = setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                    const remaining = testDurationMinutes * 60 - elapsed;
+                    if (remaining <= 0) {
+                        clearInterval(interval);
+                        setTimeLeft(0);
+                        submitTest();
+                    } else {
+                        setTimeLeft(remaining);
+                    }
+                }, 1000);
+
+                return () => clearInterval(interval);
+            }, [startTime, testDurationMinutes, submitTest]);
+            
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+
+            return (
+                <div className="mb-8 p-4 bg-gray-100 rounded-lg text-center">
+                    <h2 className="text-lg font-semibold text-gray-700">Time Remaining</h2>
+                    <p className="text-4xl font-bold text-blue-600 mt-2">
+                        {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+                    </p>
+                </div>
+            );
+        }
+
+        const getStatusColor = (q) => {
+            if (q.userAnswer) return 'bg-green-500 hover:bg-green-600 text-white';
+            return 'bg-gray-200 hover:bg-gray-300 text-gray-700';
+        };
+
+        function QuizSummary({ questions, navigateToQuestion }) {
+            return (
+                <div>
+                    <h2 className="text-lg font-semibold text-gray-700 mb-4">Question Palette</h2>
+                    <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-10 gap-2">
+                        {questions.map((q, index) => (
+                            <button
+                                key={q.id}
+                                onClick={() => navigateToQuestion(index)}
+                                className={`w-10 h-10 flex items-center justify-center rounded-md font-bold transition-colors ${getStatusColor(q)}`}
+                            >
+                                {index + 1}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="mt-4 space-y-2 text-sm text-gray-600">
+                        <div className="flex items-center"><span className="w-4 h-4 rounded-full bg-green-500 mr-2"></span> Answered</div>
+                        <div className="flex items-center"><span className="w-4 h-4 rounded-full bg-gray-200 mr-2 border border-gray-400"></span> Not Answered</div>
+                    </div>
+                </div>
+            );
+        }
+
+        function HomePage({ navigate, startQuiz }) {
+            const maxQuestions = baseQuestions.length;
+            const [quizMode, setQuizMode] = useState('mixed');
+            const [selectedSubject, setSelectedSubject] = useState('ALL');
+            const [selectedPaper, setSelectedPaper] = useState('');
+            const [numQuestions, setNumQuestions] = useState(Math.min(10, maxQuestions));
+
+            const getAvailableQuestions = () => {
+                if (quizMode === 'subject') {
+                    return getQuestionsBySubject(selectedSubject);
+                } else if (quizMode === 'paper') {
+                    return selectedPaper ? getQuestionsByPaper(selectedPaper) : [];
+                }
+                return baseQuestions;
+            };
+
+            const availableQuestions = getAvailableQuestions();
+            const maxAvailableQuestions = availableQuestions.length;
+
+            useEffect(() => {
+                if (numQuestions > maxAvailableQuestions) {
+                    setNumQuestions(Math.min(10, maxAvailableQuestions));
+                }
+            }, [maxAvailableQuestions, numQuestions]);
+
+            const handleStartQuiz = () => {
+                if (quizMode === 'paper' && selectedPaper) {
+                    startQuiz({ mode: 'paper', paper: selectedPaper });
+                } else if (quizMode === 'subject') {
+                    startQuiz({ mode: 'subject', subject: selectedSubject, numberOfQuestions: numQuestions });
+                } else {
+                    startQuiz({ mode: 'mixed', numberOfQuestions: numQuestions });
+                }
+                navigate('quiz');
+            };
+
+            const isStartDisabled = () => {
+                if (quizMode === 'paper') return !selectedPaper;
+                return numQuestions === 0 || maxAvailableQuestions === 0;
+            };
+
+            return (
+                <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-gray-50">
+                    <div className="w-full max-w-4xl text-center">
+                        <h1 className="text-4xl font-bold text-gray-800 mb-4">NISM Derivatives Practice Exam</h1>
+                        <p className="text-lg text-gray-600 mb-12">Simulate the official exam. Negative marking is applied.</p>
+                        
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div className="p-6 bg-white rounded-xl shadow-lg border border-gray-200">
+                                <h2 className="text-2xl font-semibold text-blue-600 mb-6">Quiz Mode</h2>
+                                
+                                <div className="space-y-4">
+                                    <label className="flex items-center p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                        <input
+                                            type="radio"
+                                            name="quizMode"
+                                            value="mixed"
+                                            checked={quizMode === 'mixed'}
+                                            onChange={(e) => setQuizMode(e.target.value)}
+                                            className="mr-3"
+                                        />
+                                        <div className="text-left">
+                                            <div className="font-semibold text-gray-800">Mixed Questions</div>
+                                            <div className="text-sm text-gray-600">Random questions from all topics</div>
+                                        </div>
+                                    </label>
+
+                                    <label className="flex items-center p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                        <input
+                                            type="radio"
+                                            name="quizMode"
+                                            value="subject"
+                                            checked={quizMode === 'subject'}
+                                            onChange={(e) => setQuizMode(e.target.value)}
+                                            className="mr-3"
+                                        />
+                                        <div className="text-left">
+                                            <div className="font-semibold text-gray-800">Subject-wise</div>
+                                            <div className="text-sm text-gray-600">Focus on specific derivative types</div>
+                                        </div>
+                                    </label>
+
+                                    <label className="flex items-center p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                        <input
+                                            type="radio"
+                                            name="quizMode"
+                                            value="paper"
+                                            checked={quizMode === 'paper'}
+                                            onChange={(e) => setQuizMode(e.target.value)}
+                                            className="mr-3"
+                                        />
+                                        <div className="text-left">
+                                            <div className="font-semibold text-gray-800">Question Paper</div>
+                                            <div className="text-sm text-gray-600">Complete specific practice papers</div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div className="p-6 bg-white rounded-xl shadow-lg border border-gray-200">
+                                <h2 className="text-2xl font-semibold text-blue-600 mb-6">Configuration</h2>
+                                
+                                {quizMode === 'subject' && (
+                                    <div className="mb-6">
+                                        <label className="block text-lg font-medium text-gray-700 mb-3">Select Subject</label>
+                                        <select
+                                            value={selectedSubject}
+                                            onChange={(e) => setSelectedSubject(e.target.value)}
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        >
+                                            <option value="ALL">All Subjects Mixed</option>
+                                            <option value={SUBJECTS.INTEREST_RATE}>{SUBJECTS.INTEREST_RATE}</option>
+                                            <option value={SUBJECTS.EQUITY}>{SUBJECTS.EQUITY}</option>
+                                            <option value={SUBJECTS.CURRENCY}>{SUBJECTS.CURRENCY}</option>
+                                        </select>
+                                    </div>
+                                )}
+
+                                {quizMode === 'paper' && (
+                                    <div className="mb-6">
+                                        <label className="block text-lg font-medium text-gray-700 mb-3">Select Question Paper</label>
+                                        <select
+                                            value={selectedPaper}
+                                            onChange={(e) => setSelectedPaper(e.target.value)}
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        >
+                                            <option value="">Choose a paper...</option>
+                                            {Object.entries(QUESTION_PAPERS).map(([key, name]) => (
+                                                <option key={key} value={key}>{name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+
+                                {quizMode !== 'paper' && (
+                                    <div className="mb-6">
+                                        <label htmlFor="numQuestions" className="block text-lg font-medium text-gray-700 mb-2">
+                                            Number of Questions: <span className="font-bold text-blue-600">{numQuestions}</span>
+                                        </label>
+                                        <input
+                                            type="range"
+                                            id="numQuestions"
+                                            min="1"
+                                            max={maxAvailableQuestions}
+                                            value={numQuestions}
+                                            onChange={(e) => setNumQuestions(Number(e.target.value))}
+                                            className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg"
+                                        />
+                                        <p className="text-xs text-gray-500 mt-2">
+                                            {maxAvailableQuestions} questions available for this selection
+                                        </p>
+                                    </div>
+                                )}
+
+                                {quizMode === 'paper' && selectedPaper && (
+                                    <div className="mb-6 p-3 bg-blue-50 rounded-lg">
+                                        <p className="text-sm text-blue-800">
+                                            <strong>{QUESTION_PAPERS[selectedPaper]}</strong><br/>
+                                            {getQuestionsByPaper(selectedPaper).length} questions
+                                        </p>
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={handleStartQuiz}
+                                    disabled={isStartDisabled()}
+                                    className="w-full px-6 py-4 bg-blue-600 text-white font-semibold text-lg rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition-transform transform hover:scale-105 disabled:bg-gray-400 disabled:scale-100"
+                                >
+                                    Start Quiz
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="mt-8 p-6 bg-white rounded-xl shadow-lg border border-gray-200">
+                            <h3 className="text-xl font-semibold text-gray-800 mb-4">Question Bank Statistics</h3>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                <div className="p-3 bg-blue-50 rounded-lg">
+                                    <div className="text-2xl font-bold text-blue-600">{baseQuestions.length}</div>
+                                    <div className="text-sm text-blue-800">Total Questions</div>
+                                </div>
+                                <div className="p-3 bg-green-50 rounded-lg">
+                                    <div className="text-2xl font-bold text-green-600">{getQuestionsBySubject(SUBJECTS.INTEREST_RATE).length}</div>
+                                    <div className="text-sm text-green-800">Interest Rate</div>
+                                </div>
+                                <div className="p-3 bg-purple-50 rounded-lg">
+                                    <div className="text-2xl font-bold text-purple-600">{getQuestionsBySubject(SUBJECTS.EQUITY).length}</div>
+                                    <div className="text-sm text-purple-800">Equity</div>
+                                </div>
+                                <div className="p-3 bg-orange-50 rounded-lg">
+                                    <div className="text-2xl font-bold text-orange-600">{Object.keys(QUESTION_PAPERS).length}</div>
+                                    <div className="text-sm text-orange-800">Practice Papers</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            );
+        }
+
+        function QuizPage({ navigate, quizState }) {
+            const {
+                questions,
+                currentQuestionIndex,
+                navigateToQuestion,
+                submitTest,
+                isTestRunning,
+                finalResults,
+                selectAnswer,
+                revealAnswer,
+                startTime,
+                testDurationMinutes
+            } = quizState;
+
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            useEffect(() => {
+                if (!isTestRunning && !finalResults) {
+                    navigate('home');
+                }
+                if (finalResults) {
+                    navigate('results');
+                }
+            }, [isTestRunning, finalResults, navigate]);
+
+            if (!isTestRunning || !currentQuestion) {
+                return <div className="flex h-screen items-center justify-center">Loading quiz...</div>;
+            }
+
+            const handleNext = () => {
+                navigateToQuestion(currentQuestionIndex + 1);
+            };
+            
+            const handlePrev = () => {
+                navigateToQuestion(currentQuestionIndex - 1);
+            };
+            
+            const handleSubmit = () => {
+                submitTest();
+            };
+
+            return (
+                <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
+                    <div className="w-full md:w-2/3 p-4 md:p-8 flex flex-col">
+                        <div className="bg-white p-6 rounded-lg shadow-md flex-grow">
+                            <QuestionCard 
+                                question={currentQuestion} 
+                                questionNumber={currentQuestionIndex + 1}
+                                selectAnswer={selectAnswer}
+                                navigateToQuestion={navigateToQuestion}
+                                currentQuestionIndex={currentQuestionIndex}
+                                questions={questions}
+                                revealAnswer={revealAnswer}
+                            />
+                        </div>
+                        <div className="mt-6 flex justify-between items-center">
+                            <button 
+                                onClick={handlePrev} 
+                                disabled={currentQuestionIndex === 0} 
+                                className="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg disabled:opacity-50 hover:bg-gray-400"
+                            >
+                                Previous
+                            </button>
+                            <button 
+                                onClick={handleSubmit} 
+                                className="px-6 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700"
+                            >
+                                Submit Test
+                            </button>
+                            <button 
+                                onClick={handleNext} 
+                                disabled={currentQuestionIndex === questions.length - 1} 
+                                className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg disabled:opacity-50 hover:bg-blue-700"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="w-full md:w-1/3 p-4 md:p-8 bg-white border-l border-gray-200">
+                        <div className="sticky top-8">
+                            <QuizTimer 
+                                startTime={startTime}
+                                submitTest={submitTest}
+                                testDurationMinutes={testDurationMinutes}
+                            />
+                            <QuizSummary 
+                                questions={questions}
+                                navigateToQuestion={navigateToQuestion}
+                            />
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function ResultsPage({ navigate, quizState }) {
+            const { finalResults, reset } = quizState;
+            const [showReview, setShowReview] = useState(false);
+
+            useEffect(() => {
+                if (!finalResults) {
+                    navigate('home');
+                }
+            }, [finalResults, navigate]);
+
+            if (!finalResults) {
+                return <div className="flex h-screen items-center justify-center">Loading results...</div>;
+            }
+
+            const { score, correctCount, totalQuestions, accuracy, passed, topicAnalysis, answeredQuestions } = finalResults;
+
+            const handleGoHome = () => {
+                reset();
+                navigate('home');
+            };
+
+            return (
+                <main className="min-h-screen bg-gray-50 p-4 sm:p-8">
+                    <div className="max-w-5xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+                        <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">Test Results</h1>
+                        <div className={`text-5xl font-extrabold text-center mb-6 ${passed ? 'text-green-500' : 'text-red-500'}`}>
+                            {passed ? 'PASS' : 'FAIL'}
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center mb-10">
+                            <div className="p-4 bg-blue-50 rounded-lg">
+                                <p className="text-sm font-semibold text-blue-800">SCORE (with negative marking)</p>
+                                <p className="text-3xl font-bold text-blue-600">{score.toFixed(2)} / {totalQuestions}</p>
+                            </div>
+                            <div className="p-4 bg-green-50 rounded-lg">
+                                <p className="text-sm font-semibold text-green-800">ACCURACY (Correct Answers)</p>
+                                <p className="text-3xl font-bold text-green-600">{accuracy.toFixed(2)}% ({correctCount}/{totalQuestions})</p>
+                            </div>
+                            <div className="p-4 bg-yellow-50 rounded-lg">
+                                <p className="text-sm font-semibold text-yellow-800">PASS MARK</p>
+                                <p className="text-3xl font-bold text-yellow-600">60%</p>
+                            </div>
+                        </div>
+
+                        <div className="mb-10">
+                            <h2 className="text-2xl font-semibold text-gray-700 mb-4">Performance by Topic</h2>
+                            <div className="space-y-4">
+                                {topicAnalysis.map(({ topic, accuracy, correct, total }) => (
+                                    <div key={topic} className="p-3 bg-gray-50 rounded-lg">
+                                        <div className="flex justify-between items-center mb-1">
+                                            <span className="font-medium text-gray-800">{topic}</span>
+                                            <span className="text-sm font-semibold text-gray-600">{correct}/{total}</span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                            <div 
+                                                className={`${accuracy >= 60 ? 'bg-green-500' : 'bg-red-500'} h-2.5 rounded-full`}
+                                                style={{ width: `${accuracy}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                            <button 
+                                onClick={handleGoHome} 
+                                className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700"
+                            >
+                                Take Another Test
+                            </button>
+                            <button 
+                                onClick={() => setShowReview(!showReview)} 
+                                className="px-8 py-3 bg-gray-700 text-white font-semibold rounded-lg shadow-md hover:bg-gray-800"
+                            >
+                                {showReview ? 'Hide Review' : 'Review Answers'}
+                            </button>
+                        </div>
+                        
+                        {showReview && (
+                            <div className="mt-12">
+                                <h2 className="text-2xl font-semibold text-gray-700 mb-6 border-t pt-8">Answer Review</h2>
+                                <div className="space-y-8">
+                                    {answeredQuestions.map((q, index) => (
+                                        <div key={q.id} className="p-6 bg-gray-50 rounded-lg border">
+                                            <p className="font-semibold text-lg mb-4">Q{index+1}: {q.question}</p>
+                                            <div className="space-y-2 text-md">
+                                                <p><strong>Your Answer:</strong> <span className={q.userAnswer === q.answer ? 'text-green-600' : 'text-red-600'}>{q.userAnswer || 'Not Answered'}</span></p>
+                                                <p><strong>Correct Answer:</strong> <span className="text-green-600">{q.answer}</span></p>
+                                                {q.explanation && <p className="mt-2 pt-2 border-t text-gray-600"><strong>Explanation:</strong> {q.explanation}</p>}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </main>
+            );
+        }
+
+        // Main App Component
+        function App() {
+            const [page, setPage] = useState('home');
+            const quizState = useQuizState();
+            
+            const navigate = (newPage) => setPage(newPage);
+
+            const renderPage = () => {
+                switch(page) {
+                    case 'quiz':
+                        return <QuizPage navigate={navigate} quizState={quizState} />;
+                    case 'results':
+                        return <ResultsPage navigate={navigate} quizState={quizState} />;
+                    case 'home':
+                    default:
+                        return <HomePage navigate={navigate} startQuiz={quizState.startQuiz} />;
+                }
+            };
+
+            return (
+                <>
+                    {renderPage()}
+                </>
+            );
+        }
+
+        // Render the app
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
